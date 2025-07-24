@@ -27,4 +27,4 @@ structlog==24.4.0
 python-dotenv==1.0.1
 
 # Type hints
-types-requests==2.32.0.20241016
+types-requests==2.32.4.20250611
