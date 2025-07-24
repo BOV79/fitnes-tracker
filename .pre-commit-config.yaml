@@ -1,0 +1,40 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+        description: Удаляет пробелы в конце строк
+      - id: end-of-file-fixer
+        description: Обеспечивает окончание файлов переводом строки
+      - id: check-yaml
+        description: Проверяет YAML файлы
+      - id: check-added-large-files
+        description: Предотвращает коммит больших файлов
+        args: ['--maxkb=1000']
+      - id: check-merge-conflict
+        description: Проверяет маркеры конфликтов слияния
+      - id: debug-statements
+        description: Проверяет отладочные импорты и точки останова
+
+  - repo: https://github.com/psf/black
+    rev: 24.10.0
+    hooks:
+      - id: black
+        description: Форматирование кода с помощью Black
+        language_version: python3.13
+
+  - repo: https://github.com/pycqa/flake8
+    rev: 7.1.1
+    hooks:
+      - id: flake8
+        description: Проверка соответствия стилю кода
+
+  - repo: local
+    hooks:
+      - id: pytest-check
+        name: pytest-check
+        description: Запуск быстрых тестов
+        entry: ./venv/bin/python -m pytest tests/ -q --tb=short
+        language: system
+        pass_filenames: false
+        always_run: true

@@ -1,0 +1,265 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  PYTHON_VERSION: "3.11"
+
+jobs:
+  quality:
+    name: Code Quality
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Code formatting check (Black)
+      run: black --check --diff .
+
+    - name: Linting (Flake8)
+      run: flake8 .
+
+    - name: Type checking (MyPy)
+      run: mypy .
+
+    - name: Security check (Safety)
+      run: safety check --short-report
+
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-${{ matrix.python-version }}-
+          ${{ runner.os }}-pip-
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Run tests with coverage
+      run: |
+        pytest --cov=app --cov-report=xml --cov-report=html --cov-report=term-missing
+
+    - name: Check coverage threshold
+      run: |
+        coverage report --fail-under=85
+
+    - name: Upload coverage to artifacts
+      if: matrix.python-version == '3.11'
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverage-report
+        path: htmlcov/
+
+    - name: Upload coverage to Codecov
+      if: matrix.python-version == '3.11'
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+
+  integration:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: [quality, test]
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: fitness_tracker_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-integration-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-integration-
+          ${{ runner.os }}-pip-
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Wait for PostgreSQL
+      run: |
+        until pg_isready -h localhost -p 5432 -U test; do
+          echo "Waiting for PostgreSQL..."
+          sleep 2
+        done
+
+    - name: Run integration tests
+      env:
+        DATABASE_URL: postgresql://test:test@localhost:5432/fitness_tracker_test
+        ENVIRONMENT: testing
+      run: |
+        pytest tests/test_integration.py -v --durations=10
+
+    - name: Application health check
+      env:
+        DATABASE_URL: postgresql://test:test@localhost:5432/fitness_tracker_test
+        ENVIRONMENT: testing
+      run: |
+        # Запуск приложения в фоне
+        uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+        APP_PID=$!
+
+        # Ждем запуска приложения
+        sleep 10
+
+        # Проверяем health endpoints
+        curl -f http://localhost:8000/health || exit 1
+        curl -f http://localhost:8000/api/v1/health || exit 1
+
+        # Останавливаем приложение
+        kill $APP_PID
+
+  build:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    needs: [quality, test]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: false
+        tags: fitness-tracker-v2:${{ github.sha }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    - name: Test Docker image
+      run: |
+        docker run --rm -d --name test-app -p 8080:8000 fitness-tracker-v2:${{ github.sha }}
+        sleep 10
+        curl -f http://localhost:8080/health || exit 1
+        docker stop test-app
+
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install bandit[toml]
+
+    - name: Run Bandit security scan
+      run: |
+        bandit -r app/ -f json -o bandit-report.json || true
+        bandit -r app/ || true
+
+    - name: Upload security report
+      uses: actions/upload-artifact@v3
+      with:
+        name: security-report
+        path: bandit-report.json
+
+  notify:
+    name: Notify Results
+    runs-on: ubuntu-latest
+    needs: [quality, test, integration, build, security]
+    if: always()
+
+    steps:
+    - name: CI Success
+      if: ${{ needs.quality.result == 'success' && needs.test.result == 'success' && needs.integration.result == 'success' && needs.build.result == 'success' }}
+      run: |
+        echo "✅ All CI checks passed successfully!"
+        echo "Quality: ${{ needs.quality.result }}"
+        echo "Tests: ${{ needs.test.result }}"
+        echo "Integration: ${{ needs.integration.result }}"
+        echo "Build: ${{ needs.build.result }}"
+        echo "Security: ${{ needs.security.result }}"
+
+    - name: CI Failure
+      if: ${{ needs.quality.result == 'failure' || needs.test.result == 'failure' || needs.integration.result == 'failure' || needs.build.result == 'failure' }}
+      run: |
+        echo "❌ CI checks failed!"
+        echo "Quality: ${{ needs.quality.result }}"
+        echo "Tests: ${{ needs.test.result }}"
+        echo "Integration: ${{ needs.integration.result }}"
+        echo "Build: ${{ needs.build.result }}"
+        echo "Security: ${{ needs.security.result }}"
+        exit 1

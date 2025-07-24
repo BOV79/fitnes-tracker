@@ -1,0 +1,30 @@
+# Fitness Tracker v2 - Зависимости (обновлено для Python 3.13)
+# КРИТИЧЕСКИ ВАЖНО: Все версии фиксированы и совместимы!
+
+# Web framework
+fastapi==0.115.4
+uvicorn[standard]==0.32.1
+
+# Development and testing
+pytest==8.3.4
+pytest-asyncio==0.24.0
+pytest-cov==6.0.0
+httpx==0.28.1
+
+# Code quality tools
+black==24.10.0
+flake8==7.1.1
+mypy==1.13.0
+pre-commit==4.0.1
+
+# Security scanning
+safety==3.2.11
+
+# Logging and monitoring
+structlog==24.4.0
+
+# Configuration management
+python-dotenv==1.0.1
+
+# Type hints
+types-requests==2.32.0.20241016
