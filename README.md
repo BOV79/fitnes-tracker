@@ -10,10 +10,10 @@
 [![Stars](https://img.shields.io/github/stars/BOV79/fitnes-tracker)](https://github.com/BOV79/fitnes-tracker/stargazers)
 [![Forks](https://img.shields.io/github/forks/BOV79/fitnes-tracker)](https://github.com/BOV79/fitnes-tracker/network/members)
 
-> **Современная система отслеживания фитнеса с интеграцией Apple Health** 
-> 
+> **Современная система отслеживания фитнеса с интеграцией Apple Health**
+>
 > Профессиональное FastAPI приложение с 93% покрытием тестами, автоматическим CI/CD и готовностью к деплою на Synology.
-> 
+>
 > 🌟 **Open Source проект** - добро пожаловать к участию в разработке!
 
 ## ✨ Особенности
@@ -292,4 +292,5 @@ cp .env.example .env
 [![Made with Python](https://img.shields.io/badge/Made%20with-Python-1f425f.svg)](https://www.python.org/)
 [![Built with FastAPI](https://img.shields.io/badge/Built%20with-FastAPI-009688.svg)](https://fastapi.tiangolo.com/)
 [![Powered by Docker](https://img.shields.io/badge/Powered%20by-Docker-2496ed.svg)](https://www.docker.com/)
+# fitnes-tracker
 # fitnes-tracker
