@@ -2,7 +2,7 @@
 # КРИТИЧЕСКИ ВАЖНО: Все версии фиксированы и совместимы!
 
 # Web framework
-fastapi==0.115.4
+fastapi==0.116.1
 uvicorn[standard]==0.32.1
 
 # Development and testing
