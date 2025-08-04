@@ -13,7 +13,7 @@ httpx==0.28.1
 
 # Code quality tools
 black==24.10.0
-flake8==7.1.1
+flake8==7.3.0
 mypy==1.13.0
 pre-commit==4.0.1
 
