@@ -1,29 +1,70 @@
 # Fitness Tracker v2 - Зависимости для Day 2
 # Версии совместимы с уже установленными пакетами
-
-# Core dependencies
-fastapi==0.115.4
-uvicorn[standard]==0.32.1
-pydantic==2.11.7
-
-# Testing dependencies
-pytest==8.3.4
-pytest-cov==6.0.0
-httpx==0.28.1
-
-# Code quality and formatting
+annotated-types==0.7.0
+anyio==4.10.0
+authlib==1.6.1
 black==24.10.0
-flake8==7.1.1
+certifi==2025.8.3
+cffi==1.17.1
+cfgv==3.4.0
+charset-normalizer==3.4.2
+click==8.2.1
+coverage[toml]==7.10.2
+cryptography==45.0.5
+distlib==0.4.0
+dparse==0.6.4
+fastapi==0.115.4
+filelock==3.12.4
+flake8==7.3.0
+h11==0.16.0
+httpcore==1.0.9
+httptools==0.6.4
+httpx==0.28.1
+identify==2.6.12
+idna==3.10
+iniconfig==2.1.0
+jinja2==3.1.6
+markdown-it-py==3.0.0
+markupsafe==3.0.2
+marshmallow==4.0.0
+mccabe==0.7.0
+mdurl==0.1.2
 mypy==1.13.0
-
-# Automation and hooks
+mypy-extensions==1.1.0
+nodeenv==1.9.1
+packaging==25.0
+pathspec==0.12.1
+platformdirs==4.3.8
+pluggy==1.6.0
 pre-commit==4.0.1
-
-# Security scanning (совместимая версия)
-safety==3.1.0
-
-# Logging and monitoring
+psutil==6.0.0
+pycodestyle==2.14.0
+pycparser==2.22
+pydantic==2.9.2
+pydantic-core==2.23.4
+pyflakes==3.4.0
+pygments==2.19.2
+pytest==8.3.4
+pytest-asyncio==0.24.0
+pytest-cov==6.0.0
+python-dotenv==1.0.1
+pyyaml==6.0.2
+requests==2.32.4
+rich==14.1.0
+ruamel-yaml==0.18.14
+ruamel-yaml-clib==0.2.12
+safety==3.2.11
+safety-schemas==0.0.14
+shellingham==1.5.4
+sniffio==1.3.1
+starlette==0.41.3
 structlog==24.4.0
-
-# Configuration management
-python-dotenv==1.1.1
+typer==0.16.0
+types-requests==2.32.0.20241016
+typing-extensions==4.14.1
+urllib3==2.5.0
+uvicorn[standard]==0.32.1
+uvloop==0.21.0
+virtualenv==20.33.0
+watchfiles==1.1.0
+websockets==15.0.1
