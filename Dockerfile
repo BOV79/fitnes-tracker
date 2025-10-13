@@ -1,5 +1,5 @@
 # Multi-stage build для минимизации размера образа
-FROM python:3.11-slim as builder
+FROM python:3.14-slim as builder
 
 # Метаданные
 LABEL maintainer="BOV79 <your-email@domain.com>"
@@ -36,7 +36,7 @@ RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
 # Production stage
-FROM python:3.11-slim as production
+FROM python:3.14-slim as production
 
 # Создаем пользователя без прав root для безопасности
 RUN groupadd --gid 1000 appuser && \
