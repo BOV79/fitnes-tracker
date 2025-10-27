@@ -21,7 +21,7 @@ pre-commit==4.0.1
 safety==3.2.11
 
 # Logging and monitoring
-structlog==24.4.0
+structlog==25.5.0
 
 # Configuration management
 python-dotenv==1.0.1
